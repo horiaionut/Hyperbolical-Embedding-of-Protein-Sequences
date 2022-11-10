@@ -28,7 +28,7 @@ with open('res/cath/raw/cath_v430_trainS95_nrTopoBetween.fa', 'r') as f:
         annotated_seqs['seq'].append(lines[i + 1][:-1])
 
     df = pd.DataFrame(annotated_seqs) 
-    df.to_csv('res/cath/train/annotated_seqs.csv')
+    df.to_csv('res/cath/train/annotated.csv')
 
 
 # VALIDATION, TEST
