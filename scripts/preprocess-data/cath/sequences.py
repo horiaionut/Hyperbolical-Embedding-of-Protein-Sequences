@@ -1,12 +1,12 @@
 import pandas as pd
 
-annotations = {}
+labels = {}
 
 with open('res/cath/raw/cath-domain-list.txt', 'r') as f:
     for line in f:
         if line[0] != '#':
             words = line.split()
-            annotations[words[0]] = [int(words[1]), int(words[2]), int(words[3]), int(words[4])]
+            labels[words[0]] = words[1] + '.' + words[2] + '.' + words[3] + '.' + words[4]
 
 # TRAIN
 
@@ -14,7 +14,7 @@ with open('res/cath/raw/cath-domain-list.txt', 'r') as f:
 with open('res/cath/raw/cath_v430_trainS95_nrTopoBetween.fa', 'r') as f:
     annotated_seqs = {
         "id": [],
-        "annotation": [],
+        "label": [],
         "seq": []
     }
 
@@ -24,10 +24,10 @@ with open('res/cath/raw/cath_v430_trainS95_nrTopoBetween.fa', 'r') as f:
         id = lines[i][1:-1]
 
         annotated_seqs['id'].append(id)
-        annotated_seqs['annotation'].append(annotations[id])
+        annotated_seqs['label'].append(labels[id])
         annotated_seqs['seq'].append(lines[i + 1][:-1])
 
-    df = pd.DataFrame(annotated_seqs) 
+    df = pd.DataFrame(annotated_seqs).astype('object')
     df.to_csv('res/cath/train/annotated.csv')
 
 
@@ -42,14 +42,14 @@ for src, dst in [('cath_v430_finalVal_nrTopoBetween_nrHomoWithin.fa', 'val.csv')
 
         annotated_seqs = {
             "id": [],
-            "annotation": []
+            "label": []
         }
 
         for i in range(0, len(lines), 2):
             id = lines[i][1:-1]
 
             annotated_seqs['id'].append(id)
-            annotated_seqs['annotation'].append(annotations[id])
+            annotated_seqs['label'].append(labels[id])
             
         df = pd.DataFrame(annotated_seqs) 
         df.to_csv('res/cath/' + dst)
