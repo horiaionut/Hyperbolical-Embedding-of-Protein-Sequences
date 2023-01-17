@@ -1,55 +1,41 @@
 import pandas as pd
 
-labels = {}
+protein_id_to_number = {}
 
-with open('res/cath/raw/cath-domain-list.txt', 'r') as f:
+with open('data/cath/raw/cath-domain-list.txt', 'r') as f:
     for line in f:
         if line[0] != '#':
             words = line.split()
-            labels[words[0]] = words[1] + '.' + words[2] + '.' + words[3] + '.' + words[4]
+            protein_id_to_number[words[0]] = words[1] + '.' + words[2] + '.' + words[3] + '.' + words[4]
 
-# TRAIN
+df = pd.read_csv('data/cath/labels.csv', sep=' ')
 
-# all sequences in this file are annotated
-with open('res/cath/raw/cath_v430_trainS95_nrTopoBetween.fa', 'r') as f:
-    annotated_seqs = {
-        "id": [],
-        "label": [],
-        "seq": []
-    }
+number_to_label = dict(zip(df.number, df.index))
 
-    lines = f.readlines()
+for src, dst in [
+        ('cath_v430_trainS95_nrTopoBetween.fa', 'train.csv'),
+        ('cath_v430_finalVal_nrTopoBetween_nrHomoWithin.fa', 'val.csv'),
+        ('cath_v430_finalTest_nrTopoBetween_nrHomoWithin.fa', 'test.csv')]:
 
-    for i in range(0, len(lines), 2):
-        id = lines[i][1:-1]
+    with open('data/cath/raw/' + src, 'r') as f:
+        seq = {
+            "label": [],
+            "seq": []
+        }    
 
-        annotated_seqs['id'].append(id)
-        annotated_seqs['label'].append(labels[id])
-        annotated_seqs['seq'].append(lines[i + 1][:-1])
-
-    df = pd.DataFrame(annotated_seqs).astype('object')
-    df.to_csv('res/cath/train/annotated.csv')
-
-
-# VALIDATION, TEST
-
-# all sequences in these files are annotated            
-for src, dst in [('cath_v430_finalVal_nrTopoBetween_nrHomoWithin.fa', 'val.csv'),
-                 ('cath_v430_finalTest_nrTopoBetween_nrHomoWithin.fa', 'test.csv')]:
-    
-    with open('res/cath/raw/' + src, 'r') as f:
         lines = f.readlines()
-
-        annotated_seqs = {
-            "id": [],
-            "label": []
-        }
 
         for i in range(0, len(lines), 2):
             id = lines[i][1:-1]
+            number = protein_id_to_number[id]
+            protein_seq = lines[i + 1][:-1]
 
-            annotated_seqs['id'].append(id)
-            annotated_seqs['label'].append(labels[id])
-            
-        df = pd.DataFrame(annotated_seqs) 
-        df.to_csv('res/cath/' + dst)
+            # reference: https://colab.research.google.com/drive/1TUj-ayG3WO52n5N50S7KH9vtt6zRkdmj?usp=sharing#scrollTo=6OC1toF1EM9n
+            # repl. all non-standard AAs and map them to unknown/X
+            protein_seq = protein_seq.replace('U','X').replace('Z','X').replace('O','X')
+
+            seq['seq'].append(protein_seq)
+            seq['label'].append(number_to_label[number])
+
+        df = pd.DataFrame(seq).astype('object')
+        df.to_csv('data/cath/' + dst, sep=' ', index=False)

@@ -1,7 +1,4 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
+from torch import nn
 
 class LabelEmbedModel(nn.Module):
     def __init__(self, n_labels, emb_dim=1024, dropout_p=0, eye=False):
@@ -18,9 +15,10 @@ class LabelEmbedModel(nn.Module):
 
     def init_weights(self, scale=1e-4):
         if self.eye:
-            torch.nn.init.eye_(self.e.weight)
+            nn.init.eye_(self.e.weight)
         else:
             self.e.state_dict()['weight'].uniform_(-scale, scale)
 
     def forward(self, idx):
         return self.dropout(self.e(idx))
+
