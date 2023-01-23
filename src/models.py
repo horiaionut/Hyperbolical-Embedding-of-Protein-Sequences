@@ -20,5 +20,5 @@ class LabelEmbedModel(nn.Module):
             self.e.state_dict()['weight'].uniform_(-scale, scale)
 
     def forward(self, idx):
-        return self.dropout(self.e(idx))
+        return self.dropout(self.e.weight.clone()[idx])
 

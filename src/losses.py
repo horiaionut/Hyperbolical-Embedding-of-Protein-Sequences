@@ -47,7 +47,7 @@ class LabelLoss(nn.Module):
         dists = self.dist.apply(s, o).squeeze(-1)
         # Distance between the first component and all the remaining component (embeddings of)
         outputs = -dists
-        targets = torch.zeros(outputs.shape[0]).long().cuda()
+        targets = torch.zeros(outputs.shape[0]).long().to(outputs.device)
         return self.loss(outputs, targets)
 
 

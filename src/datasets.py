@@ -10,7 +10,8 @@ class SequenceDataset(Dataset):
         df.seq = df.seq.apply(' '.join)
 
         self.seqs = df.seq.to_list()
-        self.labels_one_hot = torch.nn.functional.one_hot(torch.tensor(df.label.to_list()), no_labels)
+        
+        self.labels_one_hot = torch.nn.functional.one_hot(torch.tensor(df.label.to_list()), no_labels).to(float)
 
     def __len__(self):
         return len(self.seqs)

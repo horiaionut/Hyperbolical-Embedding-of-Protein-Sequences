@@ -7,6 +7,7 @@ class CathLabelDataset(LabelDataset):
     def __init__(self, path, no_disconnected_per_connected):
         df = pd.read_csv(path, sep=' ')
 
+        # TODO: sparse matrix
         adjecency_matrix = np.zeros((len(df), len(df)), dtype=bool)
 
         dic = {row['number'] : idx for idx, row in df.iterrows()}
