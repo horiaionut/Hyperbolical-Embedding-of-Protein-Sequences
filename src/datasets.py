@@ -43,7 +43,7 @@ class LabelDataset(torch.utils.data.Dataset):
         )
 
     def no_labels(self):
-        return len(self.items)
+        return len(self.unconnected)
 
     def __len__(self):
         return len(self.items)
