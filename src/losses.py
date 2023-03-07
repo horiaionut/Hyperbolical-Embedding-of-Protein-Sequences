@@ -5,14 +5,20 @@ import torch
 
 from .utils.poincare import PoincareDistance
 
+class Sequence01Loss(nn.Module):
+    def __init__(self):
+        super(Sequence01Loss, self).__init__()
+    
+    def forward(self, loggits, targets):
+        return (loggits.max(1)[1] != targets).sum() / len(loggits)
 
 class SequenceLoss(nn.Module):
     def __init__(self):
         super(SequenceLoss, self).__init__()
-        self.bce = nn.BCEWithLogitsLoss()
+        self.cel = nn.CrossEntropyLoss(reduction='mean')
 
     def forward(self, loggits, targets):
-        loss = self.bce(loggits, targets)
+        loss = self.cel(loggits, targets)
 
         if loss < 0:
             logging.error(loggits, targets)

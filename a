@@ -1,4 +1,0 @@
-resource:
-    gpu: num=1/task:mode=shared:gmem=16G:j_exclusive=no:gpack=yes
-    machines: lsf-server-2
-properties:

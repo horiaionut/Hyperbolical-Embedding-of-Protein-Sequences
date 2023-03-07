@@ -5,13 +5,16 @@ import torch
 from torch.utils.data import Dataset
 
 class SequenceDataset(Dataset):
-    def __init__(self, path, no_labels):
-        df = pd.read_csv(path, sep=' ')
-        df.seq = df.seq.apply(' '.join)
-
-        self.seqs = df.seq.to_list()
+    def __init__(self, label_dataset, hot_labels=True, path=None, df=None):
+        if df is None:
+            df = pd.read_csv(path, sep=' ')
+            
+        self.seqs = df.seq.apply(' '.join).to_list()
         
-        self.labels_one_hot = torch.nn.functional.one_hot(torch.tensor(df.label.to_list()), no_labels).to(float)
+        self.labels = label_dataset.real_to_assignable[df.label.to_list()]
+        
+        self.labels_one_hot = torch.nn.functional.one_hot(self.labels, len(label_dataset.assignable_labels)).to(float)
+    
 
     def __len__(self):
         return len(self.seqs)
@@ -19,12 +22,15 @@ class SequenceDataset(Dataset):
     def __getitem__(self, idx):
         return \
             self.seqs[idx], \
+            self.labels[idx], \
             self.labels_one_hot[idx]
 
 
 class LabelDataset(torch.utils.data.Dataset):
-    def __init__(self, adj, no_disconnected_per_connected):
+    def __init__(self, adj, assignable_labels, real_to_assignable, no_disconnected_per_connected):
         self.unconnected = []
+        self.assignable_labels = assignable_labels
+        self.real_to_assignable = real_to_assignable
         self.no_disconnected_per_connected = no_disconnected_per_connected
         
         all_items = np.arange(len(adj))
@@ -44,15 +50,15 @@ class LabelDataset(torch.utils.data.Dataset):
 
     def no_labels(self):
         return len(self.unconnected)
-
+        
     def __len__(self):
         return len(self.items)
 
     def __getitem__(self, idx):
         return np.concatenate((
-                self.items[idx], 
+                self.items[idx],
                 np.random.choice(
-                    self.unconnected[self.items[idx]][0], 
+                    self.unconnected[self.items[idx]][0],
                     self.no_disconnected_per_connected
                 )
             )
